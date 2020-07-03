@@ -1,0 +1,59 @@
+version: '3.4'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.5.1
+    hostname: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo ruok | nc localhost 2181 | grep imok"]
+      start_period: 30s
+
+  kafka:
+    image: confluentinc/cp-kafka:5.5.1
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "nc", "127.0.0.1", "9092"]
+      start_period: 30s
+
+  connect:
+    image: confluentinc/cp-kafka-connect:5.5.1
+    hostname: connect
+    restart: always
+    ports:
+      - "8083:8083"
+    depends_on:
+      - zookeeper
+      - kafka
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
+      CONNECT_GROUP_ID: "connect"
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-config
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_REPLICATION_FACTOR: 2
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
+      CONNECT_PLUGIN_PATH: "/usr/share/java"
+      CONNECT_LOG4J_LOGGERS: org.reflections=ERROR
+    volumes:
+      - ./target/kafka-connect-oom-file-sink-1.0-SNAPSHOT.jar:/usr/share/java/kafka-connect-oom/kafka-connect-oom-file-sink-1.0-SNAPSHOT.jar
+    healthcheck:
+      test: ["CMD", "nc", "127.0.0.1", "8083"]
+      start_period: 30s
