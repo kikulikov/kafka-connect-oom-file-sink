@@ -31,11 +31,11 @@ public class SolitaryFileSinkTaskTest {
 
   @Test
   public void testPutFlushWhenOK() throws Exception {
-    final var props = new HashMap<String, String>();
-    props.put(SolitaryFileSinkConfig.FILE_PATH, outputDir.getAbsolutePath());
-    props.put(SolitaryFileSinkConfig.FILE_PREFIX, "oom_");
+    final var sinkProperties = new HashMap<String, String>();
+    sinkProperties.put(SolitaryFileSinkConfig.FILE_PATH, outputDir.getAbsolutePath());
+    sinkProperties.put(SolitaryFileSinkConfig.FILE_PREFIX, "oom_");
 
-    task.start(props);
+    task.start(sinkProperties);
 
     task.put(Collections.singletonList(
         new SinkRecord("t1", 0, Schema.STRING_SCHEMA, "101", Schema.STRING_SCHEMA, "line101", 1)
@@ -77,11 +77,11 @@ public class SolitaryFileSinkTaskTest {
 
   @Test(expected = NullPointerException.class)
   public void testPutFlushWhenKeyIsNull() {
-    final var props = new HashMap<String, String>();
-    props.put(SolitaryFileSinkConfig.FILE_PATH, outputDir.getAbsolutePath());
-    props.put(SolitaryFileSinkConfig.FILE_PREFIX, "oom_");
+    final var sinkProperties = new HashMap<String, String>();
+    sinkProperties.put(SolitaryFileSinkConfig.FILE_PATH, outputDir.getAbsolutePath());
+    sinkProperties.put(SolitaryFileSinkConfig.FILE_PREFIX, "oom_");
 
-    task.start(props);
+    task.start(sinkProperties);
 
     task.put(Collections.singletonList(
         new SinkRecord("t1", 0, null, null, Schema.STRING_SCHEMA, "line101", 1)
@@ -90,12 +90,11 @@ public class SolitaryFileSinkTaskTest {
 
   @Test
   public void testFilenameWhenOK() {
-    final var props = new HashMap<String, String>();
-    props.put(SolitaryFileSinkConfig.FILE_PATH, "/tmp");
-    props.put(SolitaryFileSinkConfig.FILE_PREFIX, "oom_");
+    final var sinkProperties = new HashMap<String, String>();
+    sinkProperties.put(SolitaryFileSinkConfig.FILE_PATH, "/tmp");
+    sinkProperties.put(SolitaryFileSinkConfig.FILE_PREFIX, "oom_");
 
-    final var task = new SolitaryFileSinkTask();
-    task.start(props);
+    task.start(sinkProperties);
 
     final var uuid = UUID.randomUUID().toString();
     final var filename = task.makeFilename(uuid);
@@ -104,12 +103,11 @@ public class SolitaryFileSinkTaskTest {
 
   @Test
   public void testFilenameWhenPrefixIsNull() {
-    final var props = new HashMap<String, String>();
-    props.put(SolitaryFileSinkConfig.FILE_PATH, "/tmp");
-    props.put(SolitaryFileSinkConfig.FILE_PREFIX, null);
+    final var sinkProperties = new HashMap<String, String>();
+    sinkProperties.put(SolitaryFileSinkConfig.FILE_PATH, "/tmp");
+    sinkProperties.put(SolitaryFileSinkConfig.FILE_PREFIX, null);
 
-    final var task = new SolitaryFileSinkTask();
-    task.start(props);
+    task.start(sinkProperties);
 
     final var uuid = UUID.randomUUID().toString();
     final var filename = task.makeFilename(uuid);

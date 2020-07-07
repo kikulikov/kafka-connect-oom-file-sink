@@ -42,7 +42,10 @@ public class SolitaryFileSinkTask extends SinkTask {
       final var printer = makePrintStream(filename);
 
       log.trace("Writing line to {}: {}", filename, record.value());
-      printer.println(record.value());
+
+      try (printer) {
+        printer.println(record.value());
+      }
     }
   }
 

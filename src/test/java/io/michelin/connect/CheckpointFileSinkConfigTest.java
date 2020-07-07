@@ -12,11 +12,13 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
-public class SolitaryFileSinkConfigTest extends EasyMockSupport {
+public class CheckpointFileSinkConfigTest extends EasyMockSupport {
 
   private static final String MULTIPLE_TOPICS = "test1,test2";
-  private static final String FILE_PATH = "/bunch/of/monkeys";
+  private static final String TMP_PATH = "/bunch/of/bananas";
+  private static final String DEST_PATH = "/bunch/of/monkeys";
   private static final String FILE_PREFIX_VALUE = "oom_";
+  private static final String CHECKPOINT = "STOP";
 
   private Map<String, String> sinkProperties;
 
@@ -24,15 +26,17 @@ public class SolitaryFileSinkConfigTest extends EasyMockSupport {
   public void setup() throws Exception {
     sinkProperties = new HashMap<>();
     sinkProperties.put(SinkConnector.TOPICS_CONFIG, MULTIPLE_TOPICS);
-    sinkProperties.put(SolitaryFileSinkConfig.FILE_PATH, FILE_PATH);
-    sinkProperties.put(SolitaryFileSinkConfig.FILE_PREFIX, FILE_PREFIX_VALUE);
+    sinkProperties.put(CheckpointFileSinkConfig.TMP_FILE_PATH, TMP_PATH);
+    sinkProperties.put(CheckpointFileSinkConfig.DEST_FILE_PATH, DEST_PATH);
+    sinkProperties.put(CheckpointFileSinkConfig.FILE_PREFIX, FILE_PREFIX_VALUE);
+    sinkProperties.put(CheckpointFileSinkConfig.CHECKPOINT_RECORD, CHECKPOINT);
   }
 
   @Test
   public void testConfigValidationWhenOK() {
     replayAll();
 
-    final var configValues = SolitaryFileSinkConfig.CONFIG_DEF.validate(sinkProperties);
+    final var configValues = CheckpointFileSinkConfig.CONFIG_DEF.validate(sinkProperties);
     for (ConfigValue val : configValues) {
       assertEquals("Config property errors: " + val.errorMessages(), 0, val.errorMessages().size());
     }
@@ -45,9 +49,9 @@ public class SolitaryFileSinkConfigTest extends EasyMockSupport {
     replayAll();
 
     final var props = new HashMap<>(sinkProperties);
-    props.remove(SolitaryFileSinkConfig.FILE_PATH);
+    props.remove(CheckpointFileSinkConfig.TMP_FILE_PATH);
 
-    final var configValues = SolitaryFileSinkConfig.CONFIG_DEF.validate(props);
+    final var configValues = CheckpointFileSinkConfig.CONFIG_DEF.validate(props);
     final var errors = configValues.stream().filter(c -> !c.errorMessages().isEmpty()).collect(Collectors.toList());
 
     assertEquals(1, errors.size());
