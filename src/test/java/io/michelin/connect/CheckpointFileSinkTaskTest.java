@@ -11,11 +11,9 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
+import static io.michelin.connect.CheckpointFileSinkTask.allComplete;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -55,7 +53,7 @@ public class CheckpointFileSinkTaskTest {
     // >>> Partition=1 <<<
     // key=xxx,offset=1 -> key=xxx,offset=100 (STOP)
 
-    final var currentOffsets = new HashMap<TopicPartition, OffsetAndMetadata>();
+    // TODO final var currentOffsets = new HashMap<TopicPartition, OffsetAndMetadata>();
 
     // STEP #1 (produce)
 
@@ -64,8 +62,8 @@ public class CheckpointFileSinkTaskTest {
             Schema.STRING_SCHEMA, "key=xxx,offset=1", 1)
     ));
 
-    currentOffsets.put(new TopicPartition("t1", 1), new OffsetAndMetadata(1));
-    final var offsets1 = task.preCommit(currentOffsets);
+    // TODO currentOffsets.put(new TopicPartition("t1", 1), new OffsetAndMetadata(1));
+    final var offsets1 = task.preCommit(Collections.emptyMap());
     assertThat(offsets1.size(), equalTo(0));
 
     final var tmp1 = Arrays.asList(tmpPath.list());
@@ -82,8 +80,8 @@ public class CheckpointFileSinkTaskTest {
             Schema.STRING_SCHEMA, null, 100)
     ));
 
-    currentOffsets.put(new TopicPartition("t1", 1), new OffsetAndMetadata(100));
-    final var offsets2 = task.preCommit(currentOffsets);
+    // TODO currentOffsets.put(new TopicPartition("t1", 1), new OffsetAndMetadata(100));
+    final var offsets2 = task.preCommit(Collections.emptyMap());
     assertThat(offsets2.size(), equalTo(1));
     assertTrue(offsets2.values().stream().filter(p -> p.offset() == 100).count() == 1);
 
@@ -272,5 +270,32 @@ public class CheckpointFileSinkTaskTest {
     final var uuid = UUID.randomUUID().toString();
     final var filename = task.makeFilename("/tmp", uuid);
     Assert.assertEquals("/tmp/" + uuid, filename);
+  }
+
+  @Test
+  public void testAllCompleteWhenAllComplete() {
+    final var candidateKeys = new HashSet<CheckpointFileSinkTask.CandidateKey>();
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("monkeys", true));
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("bananas", true));
+
+    Assert.assertEquals(true, allComplete(candidateKeys));
+  }
+
+  @Test
+  public void testAllCompleteWhenAllIncomplete() {
+    final var candidateKeys = new HashSet<CheckpointFileSinkTask.CandidateKey>();
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("monkeys", false));
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("bananas", false));
+
+    Assert.assertEquals(false, allComplete(candidateKeys));
+  }
+
+  @Test
+  public void testAllCompleteWhenSomeIncomplete() {
+    final var candidateKeys = new HashSet<CheckpointFileSinkTask.CandidateKey>();
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("monkeys", true));
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("bananas", false));
+
+    Assert.assertEquals(false, allComplete(candidateKeys));
   }
 }
