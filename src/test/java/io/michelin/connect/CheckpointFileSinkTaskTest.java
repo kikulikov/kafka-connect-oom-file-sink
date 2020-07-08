@@ -275,8 +275,8 @@ public class CheckpointFileSinkTaskTest {
   @Test
   public void testAllCompleteWhenAllComplete() {
     final var candidateKeys = new HashSet<CheckpointFileSinkTask.CandidateKey>();
-    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("monkeys", true));
-    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("bananas", true));
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("monkeys", true, 0L));
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("bananas", true, 0L));
 
     Assert.assertEquals(true, allComplete(candidateKeys));
   }
@@ -284,8 +284,8 @@ public class CheckpointFileSinkTaskTest {
   @Test
   public void testAllCompleteWhenAllIncomplete() {
     final var candidateKeys = new HashSet<CheckpointFileSinkTask.CandidateKey>();
-    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("monkeys", false));
-    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("bananas", false));
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("monkeys", false, 0L));
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("bananas", false, 0L));
 
     Assert.assertEquals(false, allComplete(candidateKeys));
   }
@@ -293,8 +293,8 @@ public class CheckpointFileSinkTaskTest {
   @Test
   public void testAllCompleteWhenSomeIncomplete() {
     final var candidateKeys = new HashSet<CheckpointFileSinkTask.CandidateKey>();
-    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("monkeys", true));
-    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("bananas", false));
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("monkeys", true, 0L));
+    candidateKeys.add(new CheckpointFileSinkTask.CandidateKey("bananas", false, 0L));
 
     Assert.assertEquals(false, allComplete(candidateKeys));
   }

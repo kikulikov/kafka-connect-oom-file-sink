@@ -39,11 +39,10 @@ public class SolitaryFileSinkTask extends SinkTask {
   public void put(Collection<SinkRecord> sinkRecords) {
     for (SinkRecord record : sinkRecords) {
       final var filename = makeFilename(record.key().toString());
-      final var printer = makePrintStream(filename);
 
-      log.trace("Writing line to {}: {}", filename, record.value());
+      log.debug("Writing line to {}", filename);
 
-      try (printer) {
+      try (final var printer = makePrintStream(filename);) {
         printer.println(record.value());
       }
     }
