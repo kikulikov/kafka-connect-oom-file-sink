@@ -1,6 +1,6 @@
-Welcome to your new Kafka Connect connector!
+# Kafka Sink Connector
 
-# Running in development
+## Running in development
 
 ```bash
 mvn clean package
