@@ -5,36 +5,16 @@
   <!-- Assembles a packaged version targeting OS installation. -->
   <id>package</id>
   <formats>
-    <format>dir</format>
+    <format>zip</format>
   </formats>
-  <includeBaseDirectory>false</includeBaseDirectory>
+  <includeBaseDirectory>true</includeBaseDirectory>
   <fileSets>
     <fileSet>
-      <directory>${project.basedir}</directory>
-      <outputDirectory>share/doc/${project.name}/</outputDirectory>
+      <directory>${project.build.directory}/</directory>
+      <outputDirectory></outputDirectory>
       <includes>
-        <include>README*</include>
-        <include>LICENSE*</include>
-        <include>NOTICE*</include>
-        <include>licenses/</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>${project.basedir}/config</directory>
-      <outputDirectory>etc/${project.name}</outputDirectory>
-      <includes>
-        <include>*</include>
+        <include>*.jar</include>
       </includes>
     </fileSet>
   </fileSets>
-  <dependencySets>
-    <dependencySet>
-      <outputDirectory>share/java/${project.name}</outputDirectory>
-      <useProjectArtifact>true</useProjectArtifact>
-      <useTransitiveFiltering>true</useTransitiveFiltering>
-      <excludes>
-        <exclude>org.apache.kafka:connect-api</exclude>
-      </excludes>
-    </dependencySet>
-  </dependencySets>
 </assembly>

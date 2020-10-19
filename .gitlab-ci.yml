@@ -1,0 +1,60 @@
+variables:
+  MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+stages:
+  - 🛠 build
+  - 🎁 release
+
+default:
+  image: docker.artifactory.michelin.com/michelin-tools:1.6-debian-openjdk11
+  cache:
+    paths: [.m2/repository/]
+  artifacts:
+    paths:
+      - .m2/repository/io/michelin/choreography
+  tags:
+    - mt
+    - oom
+    - docker
+    - localteam
+
+# Jobs
+🔨  build-and-test-application:
+  stage: 🛠 build
+  script:
+    - mvn $MAVEN_CLI_OPTS test
+  except:
+    - tags
+
+🎀  Prepare-Release:
+  stage: 🎁 release
+  variables:
+    GIT_STRATEGY: clone
+    GIT_CHECKOUT: "false"
+  before_script:
+    - git config --global user.name "Thomas Jouve"
+    - git config --global user.email "thomas.jouve_ext@michelin.com"
+    - git remote set-url origin https://E002338:qLj1nbkTqsHsa7zkQ-io@$(echo ${CI_REPOSITORY_URL} | cut -d'@' -f2)
+  script:
+    - export
+    - git checkout -b "release/$RELEASE" origin/${CI_COMMIT_REF_NAME}
+    - mvn versions:set -DnewVersion=$RELEASE -DgenerateBackupPoms=false -f pom.xml
+    #- mvn $MAVEN_CLI_OPTS deploy -DskipTests
+    - git commit -am"Release $RELEASE"
+    - git tag -a $RELEASE -m "🎀 $RELEASE"
+    - git push --tags
+    - git checkout ${CI_COMMIT_REF_NAME}
+    - mvn versions:set -DnewVersion=${RELEASE}.1.dev-SNAPSHOT -DgenerateBackupPoms=false -f pom.xml
+    - git commit -am"Bump to new vesion ${RELEASE}.1.dev-SNAPSHOT"
+    - git push
+  only:
+    variables:
+      - $RELEASE
+
+🎀  Release:
+  stage: 🎁 release
+  script:
+    - mvn $MAVEN_CLI_OPTS deploy
+  only:
+    - tags

@@ -1,16 +1,16 @@
 package io.michelin.connect;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.kafka.common.config.ConfigValue;
 import org.apache.kafka.connect.sink.SinkConnector;
 import org.easymock.EasyMockSupport;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.junit.Assert.assertEquals;
 
 public class CheckpointFileSinkConfigTest extends EasyMockSupport {
 
@@ -36,7 +36,8 @@ public class CheckpointFileSinkConfigTest extends EasyMockSupport {
   public void testConfigValidationWhenOK() {
     replayAll();
 
-    final var configValues = CheckpointFileSinkConfig.CONFIG_DEF.validate(sinkProperties);
+    final List<ConfigValue> configValues =
+        CheckpointFileSinkConfig.CONFIG_DEF.validate(sinkProperties);
     for (ConfigValue val : configValues) {
       assertEquals("Config property errors: " + val.errorMessages(), 0, val.errorMessages().size());
     }
@@ -48,11 +49,14 @@ public class CheckpointFileSinkConfigTest extends EasyMockSupport {
   public void testConfigValidationWhenFailure() {
     replayAll();
 
-    final var props = new HashMap<>(sinkProperties);
+    final Map<String, String> props = new HashMap<>(sinkProperties);
     props.remove(CheckpointFileSinkConfig.TMP_FILE_PATH);
 
-    final var configValues = CheckpointFileSinkConfig.CONFIG_DEF.validate(props);
-    final var errors = configValues.stream().filter(c -> !c.errorMessages().isEmpty()).collect(Collectors.toList());
+    final List<ConfigValue> configValues = CheckpointFileSinkConfig.CONFIG_DEF.validate(props);
+    final List<ConfigValue> errors =
+        configValues.stream()
+            .filter(c -> !c.errorMessages().isEmpty())
+            .collect(Collectors.toList());
 
     assertEquals(1, errors.size());
 

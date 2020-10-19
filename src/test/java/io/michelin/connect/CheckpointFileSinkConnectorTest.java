@@ -1,17 +1,18 @@
 package io.michelin.connect;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.apache.kafka.connect.connector.ConnectorContext;
 import org.apache.kafka.connect.sink.SinkConnector;
 import org.easymock.EasyMockSupport;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
 
 public class CheckpointFileSinkConnectorTest extends EasyMockSupport {
 
@@ -29,11 +30,11 @@ public class CheckpointFileSinkConnectorTest extends EasyMockSupport {
     final ConnectorContext context = createMock(ConnectorContext.class);
     connector.initialize(context);
 
-    final var topDir = new TemporaryFolder();
+    final TemporaryFolder topDir = new TemporaryFolder();
     topDir.create();
 
-    final var tmpPath = topDir.newFolder("file-stream-sink-" + UUID.randomUUID().toString());
-    final var destPath = topDir.newFolder("file-stream-sink-" + UUID.randomUUID().toString());
+    final File tmpPath = topDir.newFolder("file-stream-sink-" + UUID.randomUUID().toString());
+    final File destPath = topDir.newFolder("file-stream-sink-" + UUID.randomUUID().toString());
 
     sinkProperties = new HashMap<>();
     sinkProperties.put(SinkConnector.TOPICS_CONFIG, MULTIPLE_TOPICS);
@@ -49,10 +50,10 @@ public class CheckpointFileSinkConnectorTest extends EasyMockSupport {
 
     connector.start(sinkProperties);
 
-    final var oneTaskConfig = connector.taskConfigs(1);
+    final List<Map<String, String>> oneTaskConfig = connector.taskConfigs(1);
     assertEquals(1, oneTaskConfig.size());
 
-    final var manyTaskConfigs = connector.taskConfigs(2);
+    final List<Map<String, String>> manyTaskConfigs = connector.taskConfigs(2);
     assertEquals(2, manyTaskConfigs.size());
 
     verifyAll();
